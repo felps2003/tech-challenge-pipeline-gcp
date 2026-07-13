@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Credenciais GCP - NUNCA subir!
+*.json
+!data_samples/*.json
+.env
+
+# Dados locais
+*.parquet
+*.csv
+landing/
