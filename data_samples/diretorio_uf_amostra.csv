@@ -1,0 +1,28 @@
+sigla,nome,regiao
+SC,Santa Catarina,Sul
+PR,Paraná,Sul
+RS,Rio Grande do Sul,Sul
+RO,Rondônia,Norte
+AM,Amazonas,Norte
+TO,Tocantins,Norte
+RR,Roraima,Norte
+AP,Amapá,Norte
+AC,Acre,Norte
+PA,Pará,Norte
+ES,Espírito Santo,Sudeste
+SP,São Paulo,Sudeste
+MG,Minas Gerais,Sudeste
+RJ,Rio de Janeiro,Sudeste
+RN,Rio Grande do Norte,Nordeste
+PB,Paraíba,Nordeste
+CE,Ceará,Nordeste
+PE,Pernambuco,Nordeste
+MA,Maranhão,Nordeste
+AL,Alagoas,Nordeste
+BA,Bahia,Nordeste
+PI,Piauí,Nordeste
+SE,Sergipe,Nordeste
+GO,Goiás,Centro-Oeste
+MS,Mato Grosso do Sul,Centro-Oeste
+MT,Mato Grosso,Centro-Oeste
+DF,Distrito Federal,Centro-Oeste

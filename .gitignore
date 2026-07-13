@@ -13,3 +13,4 @@ venv/
 *.parquet
 *.csv
 landing/
+!data_samples/*.csv

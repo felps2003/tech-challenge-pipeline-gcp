@@ -1,0 +1,9 @@
+# Ingestão e manipulação de dados
+basedosdados>=2.0
+pandas>=2.0
+pyarrow>=14.0
+
+# GCP (usados nas próximas etapas)
+google-cloud-storage>=2.14
+google-cloud-bigquery>=3.17
+google-cloud-pubsub>=2.19
