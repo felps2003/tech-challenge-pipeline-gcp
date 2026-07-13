@@ -53,10 +53,17 @@ def executar_arquivo(caminho_sql: str) -> None:
         )
         print(f"[{i}/{len(comandos)}] {rotulo[:80]}...")
         job = cliente.query(comando)
-        job.result()
+        resultado = job.result()
         processado = job.total_bytes_processed or 0
         total_bytes += processado
         print(f"    ok — {processado / 1e6:.1f} MB processados")
+
+        # Se o comando for um SELECT, exibe as linhas retornadas (até 30)
+        if comando.lstrip().upper().startswith("SELECT"):
+            linhas = list(resultado)
+            print(f"    --- resultado ({len(linhas)} linhas) ---")
+            for linha in linhas[:30]:
+                print("    " + " | ".join(str(v) for v in linha.values()))
 
     print(f"\nConcluído: {len(comandos)} comandos, {total_bytes / 1e6:.1f} MB no total "
           f"(cota gratuita: 1 TiB/mês).")
