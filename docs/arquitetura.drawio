@@ -1,0 +1,86 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Arquitetura" id="arq-pipeline">
+    <mxGraphModel dx="1136" dy="589" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="titulo" parent="1" style="text;html=1;fontSize=18;fontStyle=1;align=center;" value="Pipeline Híbrido — Indicador Criança Alfabetizada (Arquitetura Medalhão no GCP)" vertex="1">
+          <mxGeometry height="30" width="1000" x="200" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="fonte" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;boundedLbl=1;size=15;" value="Base dos Dados&#xa;(datalake público&#xa;no BigQuery)&#xa;&#xa;br_inep_avaliacao_&#xa;alfabetizacao&#xa;+ diretórios IBGE" vertex="1">
+          <mxGeometry height="160" width="170" x="40" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="grupoIngestao" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=13;" value="Ingestão Híbrida" vertex="1">
+          <mxGeometry height="560" width="220" x="280" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="batch" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="BATCH&#xa;Python + basedosdados&#xa;(retry + Storage API)" vertex="1">
+          <mxGeometry height="70" width="170" x="305" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="gerador" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="STREAMING&#xa;Gerador de eventos&#xa;(atualizações do indicador)" vertex="1">
+          <mxGeometry height="70" width="170" x="305" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="pubsub" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="Cloud Pub/Sub&#xa;tópico + assinatura" vertex="1">
+          <mxGeometry height="60" width="170" x="305" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="consumidor" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="Consumidor Python&#xa;(pull + ack pós-processamento)" vertex="1">
+          <mxGeometry height="60" width="170" x="305" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="gcs" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Cloud Storage — Data Lake&#xa;&#xa;bronze/&lt;tabela&gt;/dt=AAAA-MM-DD/&#xa;Parquet + JSONL&#xa;(dado bruto imutável)" vertex="1">
+          <mxGeometry height="110" width="210" x="570" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="grupoBQ" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=13;" value="BigQuery" vertex="1">
+          <mxGeometry height="560" width="480" x="860" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="bronze" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6b8af;strokeColor=#b45f06;" value="BRONZE&#xa;dado bruto&#xa;(load jobs)" vertex="1">
+          <mxGeometry height="70" width="160" x="900" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="silver" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#666666;" value="SILVER&#xa;limpeza + decodificação&#xa;+ integração das bases&#xa;(MERGE do streaming)" vertex="1">
+          <mxGeometry height="90" width="160" x="900" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="gold" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe599;strokeColor=#bf9000;" value="GOLD&#xa;indicador por município&#xa;meta vs resultado&#xa;evolução temporal" vertex="1">
+          <mxGeometry height="90" width="160" x="900" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="governanca" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="GOVERNANÇA&#xa;log_qualidade&#xa;log_execucoes" vertex="1">
+          <mxGeometry height="90" width="150" x="1140" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="consumo" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#333333;" value="Consumo&#xa;Dashboards · Análises&#xa;Modelos de ML" vertex="1">
+          <mxGeometry height="70" width="150" x="1140" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="fonte" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" target="batch" value="SQL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="batch" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" target="gcs" value="Parquet">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="gerador" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" target="pubsub" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="pubsub" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" target="consumidor" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="consumidor" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" target="gcs" value="JSONL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="gcs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="bronze" value="load jobs&#xa;(gratuitos)">
+          <mxGeometry relative="1" x="0.0333" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="690" y="355" as="sourcePoint" />
+            <mxPoint x="890" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="bronze" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" target="silver" value="SQL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="silver" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" target="gold" value="SQL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="silver" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;" target="governanca" value="validações">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="gold" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" target="consumo" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
