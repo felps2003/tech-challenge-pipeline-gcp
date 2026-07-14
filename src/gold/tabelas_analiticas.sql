@@ -1,7 +1,6 @@
 -- ============================================================================
--- CAMADA GOLD — Tech Challenge Fase 2
--- Datasets analíticos prontos para dashboards, estatística e ML.
--- Implementa os três produtos citados no edital:
+-- CAMADA GOLD
+-- Datasets analíticos prontos para dashboards, estatística e ML:
 --   1. Indicador de alfabetização por município
 --   2. Comparação entre metas e resultados
 --   3. Evolução temporal do indicador
@@ -125,7 +124,7 @@ WHERE a.proficiencia IS NOT NULL
 GROUP BY a.ano, a.id_municipio, m.nome_municipio, m.sigla_uf, a.rede;
 
 -- ============================================================================
--- AMOSTRAS (impressas no terminal pelo executor — use nos prints do README)
+-- AMOSTRAS (impressas no terminal pelo executor)
 -- ============================================================================
 
 -- Os 10 municípios mais distantes da meta (onde a política pública é mais urgente)

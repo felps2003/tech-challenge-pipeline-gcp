@@ -1,5 +1,5 @@
 -- ============================================================================
--- PAINEL DE OBSERVABILIDADE — Tech Challenge Fase 2
+-- PAINEL DE OBSERVABILIDADE
 -- Consultas sobre os logs de governança (o executor imprime os resultados).
 -- Executar com: python src/executar_sql.py src/monitoramento/painel.sql
 -- ============================================================================

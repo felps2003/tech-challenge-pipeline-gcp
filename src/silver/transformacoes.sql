@@ -1,5 +1,5 @@
 -- ============================================================================
--- CAMADA SILVER — Tech Challenge Fase 2
+-- CAMADA SILVER
 -- Limpeza, padronização, decodificação (dicionário) e integração das bases.
 -- Executar com: python src/executar_sql.py src/silver/transformacoes.sql
 -- O token ${PROJECT_ID} é substituído pelo executor.
@@ -163,8 +163,8 @@ QUALIFY ROW_NUMBER() OVER (
   ORDER BY SAFE_CAST(timestamp_evento AS TIMESTAMP) DESC
 ) = 1;
 
--- 10) INTEGRAÇÃO DAS BASES (requisito da Silver): indicador + território +
---     meta do mesmo ano, uma linha por município/ano/série/rede
+-- 10) Integração das bases: indicador + território + meta do mesmo ano,
+--     uma linha por município/ano/série/rede
 CREATE OR REPLACE TABLE `${PROJECT_ID}.silver.indicador_integrado`
 CLUSTER BY sigla_uf, id_municipio AS
 SELECT
@@ -188,8 +188,8 @@ LEFT JOIN `${PROJECT_ID}.silver.metas_municipio` mm
  AND i.ano = mm.ano_meta
  AND LOWER(i.rede) = LOWER(mm.rede);
 
--- 11) MERGE do streaming na base integrada (híbrido batch + streaming
---     convergindo na Silver — requisito do edital)
+-- 11) Incorpora os eventos de streaming na base integrada (MERGE):
+--     as trilhas batch e streaming convergem nesta tabela
 MERGE `${PROJECT_ID}.silver.indicador_integrado` alvo
 USING `${PROJECT_ID}.silver.eventos_indicador` ev
 ON  alvo.id_municipio = ev.id_municipio

@@ -1,6 +1,6 @@
 -- ============================================================================
--- QUALIDADE DE DADOS — Tech Challenge Fase 2
--- Implementa as 4 regras exigidas pelo edital:
+-- QUALIDADE DE DADOS
+-- Regras implementadas:
 --   1. Verificação de duplicidade
 --   2. Detecção de valores ausentes
 --   3. Validação de chaves de relacionamento

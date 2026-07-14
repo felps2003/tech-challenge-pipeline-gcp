@@ -1,27 +1,14 @@
-"""
-Orquestrador + Monitoramento — Tech Challenge Fase 2
-=====================================================
-Executa o pipeline completo, na ordem correta, monitorando cada etapa:
+"""Orquestrador do pipeline com monitoramento.
 
-  1. Ingestão batch (Base dos Dados -> landing/)
-  2. Camada Bronze (landing/ -> GCS -> BigQuery)
-  3. Camada Silver (limpeza + integração)
-  4. Validações de qualidade
-  5. Camada Gold (tabelas analíticas)
-
-Observabilidade implementada (requisitos do edital):
-  - Falhas de ingestão .... status por etapa + interrupção em erro
-  - Latência ............. duração em segundos de cada etapa
-  - Volume ............... resumo de linhas por tabela ao final
-  - Alertas .............. exit code != 0 e mensagem destacada em falha
-    (em produção: job no Cloud Scheduler + alerta do Cloud Monitoring)
-
-Tudo é gravado em governanca.log_execucoes via LOAD JOB (gratuito).
+Executa as etapas na ordem correta e registra em
+governanca.log_execucoes: status, duração (latência) e falhas.
+Em caso de falha, interrompe a execução e sai com código de erro.
+Ao final de uma execução bem-sucedida, imprime o volume de linhas
+por tabela.
 
 Uso:
-  export GCP_PROJECT_ID=...   e   export GCS_BUCKET=...
-  python src/monitoramento/executar_pipeline.py             # pipeline completo
-  python src/monitoramento/executar_pipeline.py --sem-batch # pula a re-extração
+    python src/monitoramento/executar_pipeline.py             # completo
+    python src/monitoramento/executar_pipeline.py --sem-batch # pula a extração
 """
 
 import argparse
@@ -33,10 +20,13 @@ from datetime import datetime
 from pathlib import Path
 
 import pydata_google_auth
+from dotenv import load_dotenv
 from google.cloud import bigquery
 
-PROJECT_ID = os.getenv("GCP_PROJECT_ID", "COLOQUE-SEU-PROJECT-ID-AQUI")
 RAIZ_REPO = Path(__file__).resolve().parents[2]
+load_dotenv(RAIZ_REPO / ".env")
+
+PROJECT_ID = os.getenv("GCP_PROJECT_ID", "")
 
 ETAPAS = [
     ("ingestao_batch",  [sys.executable, "src/ingestao/batch_basedosdados.py"]),
@@ -61,7 +51,6 @@ def autenticar():
 
 
 def registrar_execucoes(cliente_bq: bigquery.Client, registros: list[dict]) -> None:
-    """Grava o log da execução no BigQuery (load job = gratuito)."""
     config = bigquery.LoadJobConfig(
         autodetect=True,
         write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
@@ -73,7 +62,6 @@ def registrar_execucoes(cliente_bq: bigquery.Client, registros: list[dict]) -> N
 
 
 def resumo_volume(cliente_bq: bigquery.Client) -> None:
-    """Volume de dados processados — visão rápida por camada."""
     print("\n--- VOLUME POR TABELA ---")
     for tabela in TABELAS_VOLUME:
         try:
@@ -109,7 +97,7 @@ def executar(pular_batch: bool) -> None:
         if status == "FALHA":
             houve_falha = True
             print(f"!!! ALERTA: etapa '{nome}' falhou — pipeline interrompido. !!!")
-            break  # não continua com dados possivelmente inconsistentes
+            break
 
     credenciais = autenticar()
     cliente_bq = bigquery.Client(project=PROJECT_ID, credentials=credenciais)
@@ -126,8 +114,8 @@ def executar(pular_batch: bool) -> None:
 
 
 if __name__ == "__main__":
-    if "COLOQUE" in PROJECT_ID:
-        sys.exit("Configure GCP_PROJECT_ID antes de rodar.")
+    if not PROJECT_ID:
+        sys.exit("Defina GCP_PROJECT_ID no arquivo .env.")
     parser = argparse.ArgumentParser(description="Orquestrador do pipeline")
     parser.add_argument("--sem-batch", action="store_true",
                         help="pula a re-extração da Base dos Dados")
