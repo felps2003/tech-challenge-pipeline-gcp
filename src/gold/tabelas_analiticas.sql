@@ -128,7 +128,7 @@ GROUP BY a.ano, a.id_municipio, m.nome_municipio, m.sigla_uf, a.rede;
 -- ============================================================================
 
 -- Os 10 municípios mais distantes da meta (onde a política pública é mais urgente)
-SELECT nome, sigla_uf, rede, ano, resultado, meta, gap_pontos
+SELECT DISTINCT nome, sigla_uf, rede, ano, resultado, meta, gap_pontos
 FROM `${PROJECT_ID}.gold.meta_vs_resultado`
 WHERE nivel = 'municipio' AND gap_pontos IS NOT NULL
 ORDER BY gap_pontos ASC
