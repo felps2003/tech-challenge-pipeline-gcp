@@ -1,15 +1,11 @@
-"""
-Executor de SQL no BigQuery — Tech Challenge Fase 2
-====================================================
-Roda um arquivo .sql (com vários comandos separados por `;`) no BigQuery,
-substituindo o token ${PROJECT_ID} pelo projeto configurado.
+"""Executa um arquivo .sql (comandos separados por `;`) no BigQuery.
 
-Também imprime os bytes processados por comando — evidência de FinOps
-(as consultas saem da cota gratuita de 1 TiB/mês do BigQuery).
+Substitui o token ${PROJECT_ID} pelo projeto configurado e imprime os
+bytes processados por comando. Comandos SELECT têm o resultado exibido
+no terminal (até 30 linhas).
 
 Uso:
-  export GCP_PROJECT_ID=seu-project-id
-  python src/executar_sql.py src/silver/transformacoes.sql
+    python src/executar_sql.py src/silver/transformacoes.sql
 """
 
 import os
@@ -17,9 +13,13 @@ import sys
 from pathlib import Path
 
 import pydata_google_auth
+from dotenv import load_dotenv
 from google.cloud import bigquery
 
-PROJECT_ID = os.getenv("GCP_PROJECT_ID", "COLOQUE-SEU-PROJECT-ID-AQUI")
+RAIZ_REPO = Path(__file__).resolve().parents[1]
+load_dotenv(RAIZ_REPO / ".env")
+
+PROJECT_ID = os.getenv("GCP_PROJECT_ID", "")
 
 
 def autenticar():
@@ -33,22 +33,23 @@ def executar_arquivo(caminho_sql: str) -> None:
     sql = Path(caminho_sql).read_text(encoding="utf-8")
     sql = sql.replace("${PROJECT_ID}", PROJECT_ID)
 
-    # separa por `;` e remove linhas que são só comentário no início de cada bloco
+    # separa por `;` e descarta linhas de comentário no início de cada bloco
     comandos = []
     for bloco in sql.split(";"):
-        linhas = [l for l in bloco.splitlines()]
+        linhas = bloco.splitlines()
         while linhas and (not linhas[0].strip() or linhas[0].strip().startswith("--")):
             linhas.pop(0)
         comando = "\n".join(linhas).strip()
         if comando:
             comandos.append(comando)
+
     cliente = bigquery.Client(project=PROJECT_ID, credentials=autenticar())
 
     total_bytes = 0
     for i, comando in enumerate(comandos, start=1):
-        # primeira linha não-comentário, para exibir no log
         rotulo = next(
-            (l.strip() for l in comando.splitlines() if l.strip() and not l.strip().startswith("--")),
+            (l.strip() for l in comando.splitlines()
+             if l.strip() and not l.strip().startswith("--")),
             f"comando {i}",
         )
         print(f"[{i}/{len(comandos)}] {rotulo[:80]}...")
@@ -58,20 +59,18 @@ def executar_arquivo(caminho_sql: str) -> None:
         total_bytes += processado
         print(f"    ok — {processado / 1e6:.1f} MB processados")
 
-        # Se o comando for um SELECT, exibe as linhas retornadas (até 30)
         if comando.lstrip().upper().startswith("SELECT"):
             linhas = list(resultado)
             print(f"    --- resultado ({len(linhas)} linhas) ---")
             for linha in linhas[:30]:
                 print("    " + " | ".join(str(v) for v in linha.values()))
 
-    print(f"\nConcluído: {len(comandos)} comandos, {total_bytes / 1e6:.1f} MB no total "
-          f"(cota gratuita: 1 TiB/mês).")
+    print(f"\nConcluído: {len(comandos)} comandos, {total_bytes / 1e6:.1f} MB processados.")
 
 
 if __name__ == "__main__":
-    if "COLOQUE" in PROJECT_ID:
-        sys.exit("Configure GCP_PROJECT_ID antes de rodar.")
+    if not PROJECT_ID:
+        sys.exit("Defina GCP_PROJECT_ID no arquivo .env.")
     if len(sys.argv) < 2:
         sys.exit("Uso: python src/executar_sql.py <arquivo.sql>")
     executar_arquivo(sys.argv[1])

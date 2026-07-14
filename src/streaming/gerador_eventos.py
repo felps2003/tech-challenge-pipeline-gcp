@@ -1,25 +1,12 @@
-"""
-Gerador de eventos — Ingestão STREAMING (Tech Challenge Fase 2)
-================================================================
-Simula um sistema-fonte publicando atualizações do Indicador Criança
-Alfabetizada em tempo quase real, via Google Cloud Pub/Sub.
+"""Publica eventos de atualização do indicador no Pub/Sub.
 
-Cada evento é um JSON como:
-  {
-    "tipo_evento": "atualizacao_indicador",
-    "id_municipio": "3550308",
-    "ano": 2024,
-    "taxa_alfabetizacao": 61.87,
-    "timestamp_evento": "2026-07-13T14:22:05.123456"
-  }
-
-O script garante que o tópico E a assinatura existem antes de publicar
-(sem assinatura criada, mensagens publicadas seriam perdidas).
+Simula um sistema-fonte emitindo novas medições do Indicador Criança
+Alfabetizada em tempo quase real. Garante que o tópico e a assinatura
+existem antes de publicar.
 
 Uso:
-  export GCP_PROJECT_ID=seu-project-id
-  python src/streaming/gerador_eventos.py            # publica 100 eventos
-  python src/streaming/gerador_eventos.py --n 500    # publica 500
+    python src/streaming/gerador_eventos.py            # 100 eventos
+    python src/streaming/gerador_eventos.py --n 500
 """
 
 import argparse
@@ -32,17 +19,17 @@ from datetime import datetime
 from pathlib import Path
 
 import pydata_google_auth
+from dotenv import load_dotenv
 from google.api_core.exceptions import AlreadyExists
 from google.cloud import pubsub_v1
 
-# ----------------------------------------------------------------------------
-# Configuração
-# ----------------------------------------------------------------------------
-PROJECT_ID = os.getenv("GCP_PROJECT_ID", "COLOQUE-SEU-PROJECT-ID-AQUI")
+RAIZ_REPO = Path(__file__).resolve().parents[2]
+load_dotenv(RAIZ_REPO / ".env")
+
+PROJECT_ID = os.getenv("GCP_PROJECT_ID", "")
 TOPICO = "eventos-indicador-alfabetizacao"
 ASSINATURA = "eventos-indicador-sub"
 
-RAIZ_REPO = Path(__file__).resolve().parents[2]
 PARQUET_MUNICIPIOS = RAIZ_REPO / "landing" / "indicador_municipio.parquet"
 
 
@@ -50,13 +37,12 @@ def autenticar():
     credenciais = pydata_google_auth.get_user_credentials(
         scopes=["https://www.googleapis.com/auth/cloud-platform"],
     )
-    # Carimba o SEU projeto como consumidor da API (sem isso, o Pub/Sub
-    # contabiliza a chamada no projeto do app OAuth e retorna 403).
+    # define o projeto de cota das chamadas de API
     return credenciais.with_quota_project(PROJECT_ID)
 
 
 def garantir_infraestrutura(credenciais) -> None:
-    """Cria tópico e assinatura, se ainda não existirem."""
+    """Cria tópico e assinatura caso não existam."""
     publisher = pubsub_v1.PublisherClient(credentials=credenciais)
     subscriber = pubsub_v1.SubscriberClient(credentials=credenciais)
     caminho_topico = publisher.topic_path(PROJECT_ID, TOPICO)
@@ -78,13 +64,12 @@ def garantir_infraestrutura(credenciais) -> None:
 
 
 def carregar_municipios() -> list[str]:
-    """Usa municípios reais da landing, com fallback para capitais."""
+    """Usa códigos de municípios reais da landing, se disponível."""
     if PARQUET_MUNICIPIOS.exists():
         import pandas as pd
 
         df = pd.read_parquet(PARQUET_MUNICIPIOS, columns=["id_municipio"])
         return df["id_municipio"].dropna().unique().tolist()
-    # fallback: algumas capitais (códigos IBGE)
     return ["3550308", "3304557", "5300108", "2927408", "2304400", "1302603"]
 
 
@@ -106,13 +91,13 @@ def publicar_eventos(credenciais, n_eventos: int) -> None:
         publisher.publish(caminho_topico, dados).result()
         if (i + 1) % 20 == 0:
             print(f"  {i + 1}/{n_eventos} eventos publicados")
-        time.sleep(0.05)  # ~20 eventos/s, simulando fluxo contínuo
+        time.sleep(0.05)
     print("[ok] publicação concluída.")
 
 
 if __name__ == "__main__":
-    if "COLOQUE" in PROJECT_ID:
-        sys.exit("Configure GCP_PROJECT_ID (variável de ambiente ou edite o script).")
+    if not PROJECT_ID:
+        sys.exit("Defina GCP_PROJECT_ID no arquivo .env.")
     parser = argparse.ArgumentParser(description="Gerador de eventos Pub/Sub")
     parser.add_argument("--n", type=int, default=100, help="número de eventos")
     args = parser.parse_args()
