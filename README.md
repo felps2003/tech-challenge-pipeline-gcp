@@ -180,6 +180,6 @@ python src/executar_sql.py src/monitoramento/painel.sql
 
 ---
 
-**Vídeo executivo**: [insira aqui o link do vídeo]
+**Vídeo executivo**: https://youtu.be/zNKFyhXL6qU
 
 **Fontes**: [Indicador Criança Alfabetizada — Base dos Dados](https://basedosdados.org/dataset/073a39d4-89cf-4068-b1e8-34ed0d9c0b72) · [Compromisso Nacional Criança Alfabetizada (MEC)](https://www.gov.br/mec/pt-br/crianca-alfabetizada) · [Pesquisa Alfabetiza Brasil (Inep)](https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/avaliacao-da-alfabetizacao)
