@@ -18,41 +18,7 @@ O desafio é que acompanhar esse indicador exige **integrar fontes heterogêneas
 
 ### Diagrama da pipeline
 
-<!-- 📸 IMAGEM 1: insira aqui o diagrama de arquitetura (docs/arquitetura.png) -->
-![Diagrama da arquitetura](docs/arquitetura.png)
-
-```mermaid
-flowchart LR
-    subgraph FONTE["Base dos Dados (BigQuery público)"]
-        BD[("br_inep_avaliacao_alfabetizacao<br/>+ diretórios IBGE")]
-    end
-
-    subgraph INGESTAO["Ingestão Híbrida"]
-        BATCH["Batch<br/>Python + basedosdados"]
-        GER["Gerador de eventos<br/>(simulação tempo real)"]
-        PS[/"Pub/Sub<br/>tópico + assinatura"/]
-        CONS["Consumidor Python"]
-    end
-
-    subgraph GCP["Google Cloud — nível gratuito"]
-        subgraph LAKE["Cloud Storage (data lake)"]
-            BR["bronze/<tabela>/dt=YYYY-MM-DD/<br/>Parquet + JSONL"]
-        end
-        subgraph BQ["BigQuery"]
-            B[("bronze<br/>dado bruto")]
-            S[("silver<br/>limpo + integrado")]
-            G[("gold<br/>analítico")]
-            GOV[("governanca<br/>logs de qualidade<br/>e execuções")]
-        end
-    end
-
-    BD -->|SQL| BATCH --> BR
-    GER --> PS --> CONS --> BR
-    BR -->|load jobs gratuitos| B
-    B -->|"SQL (decodificação,<br/>limpeza, integração)"| S
-    S -->|"SQL (agregações,<br/>meta vs resultado)"| G
-    B & S -.->|validações| GOV
-```
+![Diagrama da arquitetura](docs/img/arquitetura.png)
 
 ### Fluxo de dados
 
@@ -95,7 +61,6 @@ Implementadas em `src/qualidade/validacoes.sql`, com resultado historizado em `g
 | Chaves de relacionamento | Anti-joins: indicador → dim_municipio; eventos → dim_municipio | ✅ OK |
 | Consistência entre tabelas | Taxas e metas em [0,100]; ~5.570 municípios; média municipal × taxa oficial da UF | ✅ OK (5.571 municípios) |
 
-<!-- 📸 IMAGEM 2: insira aqui o print do terminal com as 10 validações OK -->
 ![Resultado das validações de qualidade](docs/img/validacoes_qualidade.png)
 
 ## 6. Monitoramento e Observabilidade
@@ -108,7 +73,6 @@ O orquestrador (`src/monitoramento/executar_pipeline.py`) executa as etapas na o
 
 **Caso real durante o desenvolvimento**: uma queda de conexão a 98% do download dos microdados (execução `20260713_203609`) foi detectada, interrompeu o pipeline e ficou registrada no log. A correção — retry automático (3 tentativas) + BigQuery Storage API — está versionada no histórico do repositório. Em produção, o mesmo orquestrador rodaria agendado (Cloud Scheduler + Cloud Run) com alertas do Cloud Monitoring.
 
-<!-- 📸 IMAGEM 3: insira aqui o print do painel de observabilidade (latência por etapa) -->
 ![Painel de observabilidade](docs/img/painel_monitoramento.png)
 
 ## 7. FinOps — Otimização de Custos
@@ -145,8 +109,8 @@ tech-challenge-pipeline-gcp/
 ├── README.md
 ├── requirements.txt
 ├── docs/
-│   ├── arquitetura.png          # diagrama da pipeline
-│   └── decisoes.md              # registro de decisões técnicas
+│   ├── arquitetura.drawio       # fonte editável do diagrama
+│   └── img/                     # diagrama e evidências de execução
 ├── data_samples/                # amostras (50 linhas) de cada tabela ingerida
 └── src/
     ├── ingestao/batch_basedosdados.py    # batch: Base dos Dados -> landing (Parquet)
@@ -189,16 +153,27 @@ python src/executar_sql.py src/monitoramento/painel.sql
 
 ## 11. Resultados
 
-<!-- 📸 IMAGEM 4: insira aqui o print do bucket no Cloud Storage (estrutura bronze/dt=...) -->
+**Data lake no Cloud Storage** (partição por data de ingestão):
+
 ![Data lake no Cloud Storage](docs/img/bucket_bronze.png)
 
-<!-- 📸 IMAGEM 5: insira aqui o print dos datasets bronze/silver/gold/governanca no BigQuery -->
+**Datasets no BigQuery** (arquitetura medalhão + governança):
+
 ![Datasets no BigQuery](docs/img/datasets_bigquery.png)
 
-<!-- 📸 IMAGEM 6: insira aqui o print do tópico/assinatura no Pub/Sub -->
+**Tabelas por camada:**
+
+| Camada | Tabelas |
+|---|---|
+| ![Bronze](docs/img/tables_bigquery_bronze.png) | ![Silver](docs/img/tables_bigquery_silver.png) |
+| ![Gold](docs/img/tables_bigquery_gold.png) | ![Governança](docs/img/tables_bigquery_governanca.png) |
+
+**Streaming no Pub/Sub** (tópico e assinatura):
+
 ![Streaming no Pub/Sub](docs/img/pubsub_topico.png)
 
-<!-- 📸 IMAGEM 7: insira aqui o print da consulta "10 municípios mais distantes da meta" -->
+**Camada Gold em ação** — os 10 municípios mais distantes da meta:
+
 ![Top 10 municípios mais distantes da meta](docs/img/top10_gap_meta.png)
 
 ---
