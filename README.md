@@ -165,8 +165,10 @@ python src/executar_sql.py src/monitoramento/painel.sql
 
 | Camada | Tabelas |
 |---|---|
-| ![Bronze](docs/img/tables_bigquery_bronze.png) | ![Silver](docs/img/tables_bigquery_silver.png) |
-| ![Gold](docs/img/tables_bigquery_gold.png) | ![Governança](docs/img/tables_bigquery_governanca.png) |
+| Bronze | ![Bronze](docs/img/tables_bigquery_bronze.png) |
+| Silver | ![Silver](docs/img/tables_bigquery_silver.png) |
+| Gold | ![Gold](docs/img/tables_bigquery_gold.png) |
+| Governança | ![Governança](docs/img/tables_bigquery_governanca.png) |
 
 **Streaming no Pub/Sub** (tópico e assinatura):
 
