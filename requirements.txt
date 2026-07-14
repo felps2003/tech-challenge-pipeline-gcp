@@ -7,3 +7,7 @@ pyarrow>=14.0
 google-cloud-storage>=2.14
 google-cloud-bigquery>=3.17
 google-cloud-pubsub>=2.19
+
+# Download de resultados grandes via BigQuery Storage API
+# (mais rápido e estável que a API REST para tabelas como `alunos`)
+google-cloud-bigquery-storage>=2.24
